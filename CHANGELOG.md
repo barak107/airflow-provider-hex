@@ -3,7 +3,7 @@
 ## [Unreleased]
 
 ### Added
--
+- Added `hex_dry_run` parameter to `HexRunProjectOperator` and `HexHook.run_project`/`run_and_poll`, to support Hex's [dry run](https://learn.hex.tech/docs/develop-logic/hex-api/api-reference#operation/RunProject) API option.
 
 ### Changed
 -

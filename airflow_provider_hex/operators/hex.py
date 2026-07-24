@@ -31,6 +31,11 @@ class HexRunProjectOperator(BaseOperator):
     :param input_paramters: additional input parameters, a json-serializable dictionary
         of variable_name: value pairs.
     :type input_parameters: dict
+    :param hex_dry_run: When true, this endpoint will perform a dry run that does
+        not run the project. This can be useful for validating the structure of an
+        API call, and inspecting a dummy response, without running a project.
+        named with prefix `hex_` to avoid conflict with reserved word `dry_run`.
+    :type hex_dry_run: bool
     :param update_cache: When true, this run will update the cached state of the
         published app with the latest run results.
         Additionally, any SQL cells that have caching enabled will be re-executed as
@@ -51,6 +56,7 @@ class HexRunProjectOperator(BaseOperator):
         timeout: int = 3600,
         kill_on_timeout: bool = True,
         input_parameters: Optional[Dict[str, Any]] = None,
+        hex_dry_run: bool = False,
         update_cache: bool = False,
         notifications: List[NotificationDetails] = [],
         **kwargs,
@@ -63,17 +69,26 @@ class HexRunProjectOperator(BaseOperator):
         self.timeout = timeout
         self.kill_on_timeout = kill_on_timeout
         self.input_parameters = input_parameters
+        self.hex_dry_run = hex_dry_run
         self.update_cache = update_cache
         self.notifications = notifications
 
     def execute(self, context: Context) -> Any:
         hook = HexHook(self.hex_conn_id)
 
+        if self.hex_dry_run and self.synchronous:
+            self.log.warning(
+                "HexRunProjectOperator: dry run requested with synchronous=True. "
+                "Overriding to synchronous=False."
+            )
+            self.synchronous = False
+
         if self.synchronous:
             self.log.info("Starting Hex Project")
             resp = hook.run_and_poll(
                 self.project_id,
                 inputs=self.input_parameters,
+                hex_dry_run=self.hex_dry_run,
                 update_cache=self.update_cache,
                 poll_interval=self.wait_seconds,
                 poll_timeout=self.timeout,
@@ -87,6 +102,7 @@ class HexRunProjectOperator(BaseOperator):
             resp = hook.run_project(
                 self.project_id,
                 inputs=self.input_parameters,
+                hex_dry_run=self.hex_dry_run,
                 notifications=self.notifications,
             )
             self.log.info("Hex Project started successfully.")

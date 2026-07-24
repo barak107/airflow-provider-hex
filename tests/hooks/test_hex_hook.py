@@ -41,6 +41,7 @@ class TestHexHook:
         assert requests_mock.last_request.json() == {
             "inputParams": {"param": "var"},
             "updateCache": False,
+            "dryRun": False,
         }
 
     def test_run_project_empty_inputs(self, requests_mock):
@@ -55,6 +56,22 @@ class TestHexHook:
         assert response == {"data": "mocked response"}
         assert requests_mock.last_request.json() == {
             "updateCache": False,
+            "dryRun": False,
+        }
+
+    def test_run_project_dry_run(self, requests_mock):
+        requests_mock.post(
+            "https://www.httpbin.org/api/v1/project/abc-123/run",
+            headers={"Content-Type": "application/json"},
+            json={"data": "mocked response"},
+        )
+
+        hook = HexHook(hex_conn_id="hex_conn")
+        response = hook.run_project("abc-123", hex_dry_run=True)
+        assert response == {"data": "mocked response"}
+        assert requests_mock.last_request.json() == {
+            "updateCache": False,
+            "dryRun": True,
         }
 
     def test_run_status(self, requests_mock):

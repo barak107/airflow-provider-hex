@@ -136,13 +136,14 @@ class HexHook(BaseHook):
         self,
         project_id: str,
         inputs: Optional[Dict[str, Any]] = None,
+        hex_dry_run: bool = False,
         update_cache: bool = False,
         notifications: List[NotificationDetails] = [],
     ) -> RunResponse:
         endpoint = f"/api/v1/project/{project_id}/run"
         method = "POST"
 
-        data: Dict[str, Any] = {"updateCache": update_cache}
+        data: Dict[str, Any] = {"updateCache": update_cache, "dryRun": hex_dry_run}
         if inputs:
             data["inputParams"] = inputs
 
@@ -177,13 +178,16 @@ class HexHook(BaseHook):
         self,
         project_id: str,
         inputs: Optional[dict],
+        hex_dry_run: bool = False,
         update_cache: bool = False,
         poll_interval: int = 3,
         poll_timeout: int = 600,
         kill_on_timeout: bool = True,
         notifications: List[NotificationDetails] = [],
     ):
-        run_response = self.run_project(project_id, inputs, update_cache, notifications)
+        run_response = self.run_project(
+            project_id, inputs, hex_dry_run, update_cache, notifications
+        )
         run_id = run_response["runId"]
 
         poll_start = datetime.datetime.now()
