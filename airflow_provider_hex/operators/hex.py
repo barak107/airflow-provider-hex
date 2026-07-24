@@ -56,9 +56,9 @@ class HexRunProjectOperator(BaseOperator):
         timeout: int = 3600,
         kill_on_timeout: bool = True,
         input_parameters: Optional[Dict[str, Any]] = None,
-        hex_dry_run: bool = False,
         update_cache: bool = False,
         notifications: List[NotificationDetails] = [],
+        hex_dry_run: bool = False,
         **kwargs,
     ) -> None:
         super().__init__(**kwargs)
@@ -88,7 +88,6 @@ class HexRunProjectOperator(BaseOperator):
             resp = hook.run_and_poll(
                 self.project_id,
                 inputs=self.input_parameters,
-                hex_dry_run=self.hex_dry_run,
                 update_cache=self.update_cache,
                 poll_interval=self.wait_seconds,
                 poll_timeout=self.timeout,
@@ -102,8 +101,8 @@ class HexRunProjectOperator(BaseOperator):
             resp = hook.run_project(
                 self.project_id,
                 inputs=self.input_parameters,
-                hex_dry_run=self.hex_dry_run,
                 notifications=self.notifications,
+                hex_dry_run=self.hex_dry_run,
             )
             self.log.info("Hex Project started successfully.")
 
